@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -e
+
+cd "$(dirname "$0")/.."
+
+describe() {
+  echo "===> $1…"
+}
+
+squelch() {
+  $@ > /dev/null 2>&1
+}
+
+cd ./api
+bundle install
+bundle exec rails db:setup
+
+../bin/update

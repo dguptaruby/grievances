@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+
+set -e
+
+cd "$(dirname "$0")/.."
+
+describe() {
+  echo "===> $1…"
+}
+
+squelch() {
+  $@ > /dev/null 2>&1
+}
+
+install_brew_dependencies() {
+  squelch brew bundle check || {
+    describe "Installing Homebrew dependencies"
+    brew bundle
+  }
+}
+
+update_asdf_plugins() {
+  describe "Updating asdf language plugins"
+  squelch asdf plugin-update --all
+}
+
+configure_asdf_for_bash() {
+  squelch grep -Fq 'asdf' $HOME/.bash_profile || {
+    describe "Configuring asdf for bash"
+    echo "# Setup for asdf" >> $HOME/.bash_profile
+    echo ". $(brew --prefix asdf)/asdf.sh" >> $HOME/.bash_profile
+    echo ". $(brew --prefix asdf)/etc/bash_completion.d/asdf.bash" >> $HOME/.bash_profile
+    . $(brew --prefix asdf)/asdf.sh
+  }
+}
+
+add_asdf_ruby_plugin() {
+  if [ -z "$(asdf plugin-list | grep ruby || true)" ]; then
+    describe "Installing asdf ruby plugin"
+    asdf plugin-add ruby https://github.com/asdf-vm/asdf-ruby.git
+  fi
+}
+
+add_asdf_node_plugin() {
+  if [ -z "$(asdf plugin-list | grep nodejs || true)" ]; then
+    describe "Installing asdf nodejs plugin"
+    asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+    bash $HOME/.asdf/plugins/nodejs/bin/import-release-team-keyring
+  fi
+}
+
+update_asdf_plugins() {
+  describe "Updating asdf language plugins"
+  asdf plugin-update --all
+}
+
+asdf_install_tools() {
+  # desired_node=$(grep nodejs .tool-versions | sed 's/^nodejs \(.*\)$/\1/')
+  # actual_node=$(node -v | cut -d 'v' -f 2)
+  desired_ruby=$(grep ruby .tool-versions | sed 's/^ruby \(.*\)$/\1/')
+  actual_ruby=$(sed 's/^ruby \(.*\)p.*$/\1/' <<< $(ruby -v))
+  if [ "$actual_ruby" != "$desired_ruby" ] ; then
+    describe "Installing .tools-versions languages"
+    asdf install
+  fi
+}
+
+install_bundler_version() {
+  if [ -f Gemfile.lock ]; then
+    desired_bundler=$(grep -A 1 'BUNDLED WITH' Gemfile.lock | tail -n 1 | awk '{$1=$1};1')
+    actual_bundler=$(bundler --version| sed 's/^Bundler version \(.*\)$/\1/')
+    if [ ! -z "$desired_bundler" ] && [ "$actual_bundler" != "$desired_bundler" ]; then
+      describe "Installing bundler version from Gemfile.lock"
+      [ ! -z "$actual_bundler" ] && {
+        gem uninstall bundler -v ${actual_bundler}
+      }
+      gem install bundler -v ${desired_bundler}
+    fi
+  fi
+}
+
+install_gems() {
+  squelch bundle check || {
+    describe "Installing gem dependencies"
+    ./bin/bundle install
+  }
+}
+
+install_node_packages() {
+  squelch yarn check --verify-tree || {
+    describe "Installing npm library dependencies"
+    yarn install
+  }
+}
+
+install_yarn_version() {
+  set +e
+  yarn_path=$(command -v yarn)
+  set -e
+  yarn_version="1.22.10"
+  if [ -z "$yarn_path" ] || [ "$(yarn --version)" != "$yarn_version" ]; then
+    describe "Installing yarn version from package.json"
+    npm install -g yarn@${yarn_version}
+    asdf reshim nodejs
+  fi
+}
+
+install_brew_dependencies
+
+configure_asdf_for_bash
+add_asdf_ruby_plugin
+add_asdf_node_plugin
+asdf_install_tools
+
+cd ./api
+install_bundler_version
+install_gems
+
+cd ../web
+install_yarn_version
+install_node_packages
+
+describe "done"

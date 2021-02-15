@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+set -e
+cd "$(dirname "$0")/.."
+
+describe() {
+  echo "===> $1…"
+}
+
+squelch() {
+  $@ > /dev/null 2>&1
+}
+
+# trap ctrl-c and call cleanup
+trap cleanup SIGINT
+
+function cleanup() {
+  describe "Cleaning up"
+  squelch kill -2 $(cat ./tmp/pids/rails-server.pid)
+  squelch kill -2 $(cat ./tmp/pids/webpack-server.pid)
+}
+
+mkdir -p ./log
+touch ./log/development.log
+mkdir -p ./tmp/pids/
+
+describe "Starting api server..."
+cd ./api
+rails server -p 3100 > ../log/development.log 2>&1 &
+echo $! > ../tmp/pids/rails-server.pid
+
+describe "Starting web server..."
+cd ../web
+yarn start > ../log/development.log 2>&1 &
+echo $! > ../tmp/pids/webpack-server.pid
+
+describe "Tailing log"
+cd ..
+tail -f ./log/development.log
+

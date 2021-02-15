@@ -1,0 +1,17 @@
+version: "3.4"
+services:
+  postgres:
+    image: postgres:13.2
+    environment:
+      POSTGRES_PASSWORD: insecure
+      POSTGRES_USER: grievances
+    ports:
+      - 15432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  redis:
+    image: redis:6.0
+    ports:
+      - 16379:6379
+volumes:
+  pgdata:
