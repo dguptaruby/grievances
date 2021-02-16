@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+set -e
+cd "$(dirname "$0")/.."
+
+CI=true
+
+describe() {
+  echo "--- $1…"
+}
+
+squelch() {
+  $@ > /dev/null 2>&1
+}
+
+services_up() {
+  if [ "$(uname -s)" == "Darwin" ]; then
+    squelch docker-compose up -d
+  fi
+}
+
+services_down() {
+  if [ "$(uname -s)" == "Darwin" ]; then
+    squelch docker-compose down
+  fi
+}
+
+cd ./api
+describe ":rspec: Running tests"
+bundle exec rspec -f progress
+
+is_ok=$?
+
+if [[ $is_ok -ne 0 ]]; then
+  echo "^^^ +++"
+  echo ":rspec: failed, oh no!!"
+  exit $is_ok
+fi
+
+
+cd ../web
+describe ":jest: Running tests"
+CI=true yarn test
+
+is_ok=$?
+
+if [[ $is_ok -ne 0 ]]; then
+  echo "^^^ +++"
+  echo ":jest: failed, oh no!!"
+  exit $is_ok
+fi
+
+describe "done"
