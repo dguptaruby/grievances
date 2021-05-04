@@ -1,0 +1,22 @@
+.content{
+  height: auto;
+  width: auto;
+  overflow: hidden;
+  box-shadow: 1px 1px 15px rgba(0,0,0,0.4);
+  text-align: center;
+}
+
+.content .slide{
+  height: auto;
+  width: auto;
+  padding: 10px;
+  text-align: center;
+}
+
+.heading {
+  text-align: center;
+}
+
+.link {
+  text-align: center;
+}

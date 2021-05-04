@@ -1,9 +1,13 @@
-<h1>“I got a lot of problems with your people. Now, you’re gonna hear about it…”</h1>
-<h3><%= link_to 'Add Grievance', new_grievance_path %></h3>
-<ul>
+<%= stylesheet_link_tag "style" %>
+<%= javascript_include_tag "application" %>
+
+<h1 class="heading">“I got a lot of problems with your people. Now, you’re gonna hear about it…”</h1>
+<h3 class="link"><%= link_to 'Add Grievance', new_grievance_path %></h3>
+<br>
+<div class="content">
   <% @grievances.each do |grievance| %>
-    <li>
-      <%= link_to grievance.name, grievance %>
-    </li>
+    <div class="slide">
+      <%= grievance.grievance + ' aggrieved by ' + grievance.name + ' and aggriever by ' + grievance.aggriever + ' on ' + grievance.created_at.strftime("%d/%m/%Y") %>
+    </div>
   <% end %>
-</ul>
+</div>
