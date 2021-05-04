@@ -1,9 +1,9 @@
-<h1>Grievance</h1>
-<h3><%= link_to 'Add Grievance', new_grievance %></h3>
+<h1>“I got a lot of problems with your people. Now, you’re gonna hear about it…”</h1>
+<h3><%= link_to 'Add Grievance', new_grievance_path %></h3>
 <ul>
   <% @grievances.each do |grievance| %>
     <li>
-      <%= link_to grievance.title, grievance %>
+      <%= link_to grievance.name, grievance %>
     </li>
   <% end %>
 </ul>

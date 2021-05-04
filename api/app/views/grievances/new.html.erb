@@ -4,16 +4,25 @@
   <div>
     <%= form.label :name %><br>
     <%= form.text_field :name %>
+    <% @grievance.errors.full_messages_for(:name).each do |message| %>
+      <div style="color: red"><%= message %></div>
+    <% end %>
   </div>
 
   <div>
     <%= form.label :aggriever %><br>
     <%= form.text_field :aggriever %>
+    <% @grievance.errors.full_messages_for(:aggriever).each do |message| %>
+      <div style="color: red"><%= message %></div>
+    <% end %>
   </div>
 
   <div>
     <%= form.label :grievance %><br>
     <%= form.text_area :grievance %>
+    <% @grievance.errors.full_messages_for(:grievance).each do |message| %>
+      <div style="color: red"><%= message %></div>
+    <% end %>
   </div>
 
   <div>
